@@ -22,6 +22,43 @@ import java.sql.SQLException;
 public class AjaxServlet extends HttpServlet {
     @Override
     protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
+        String action = req.getParameter("action");
+        if (action.equals("register")) {
+            register(req, resp);
+        }
+        if (action.equals("email")) {
+            email(req, resp);
+        }
+    }
+
+    private void register(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
+        String email = req.getParameter("email").trim();
+        String password = req.getParameter("password");
+        Connection connection = DB.getConnection();
+        if (connection == null) {
+            return;
+        }
+
+        PreparedStatement preparedStatement = null;
+        String sql = "INSERT INTO db_ajax.user VALUES(NULL, ?, ?)";
+
+        try {
+            preparedStatement = connection.prepareStatement(sql);
+            preparedStatement.setString(1, email);
+            preparedStatement.setString(2, password);
+            preparedStatement.executeUpdate();
+
+            resp.setContentType("text/html; charset=UTF-8");
+            Writer writer = resp.getWriter();
+            writer.write(email + " " + password);
+        } catch (SQLException e) {
+            e.printStackTrace();
+        } finally {
+            DB.close(null, preparedStatement, connection);
+        }
+    }
+
+    private void email(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
         String email = req.getParameter("email");
 
         Connection connection = DB.getConnection();

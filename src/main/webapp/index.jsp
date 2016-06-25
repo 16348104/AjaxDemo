@@ -13,7 +13,8 @@
     <script>
         var emailRegExp = /^[A-z0-9._-]+@[A-z0-9.-]+\.[A-z]{2,6}$/;
         $(function () {
-            $('#email').blur(function() {
+            var emailExist = false;
+            $('#email').blur(function () {
                 var email = $(this).val();
                 var hint = $('small');
                 if (!emailRegExp.test(email)) {
@@ -22,14 +23,16 @@
                 } else {
                     hint.hide();
                     $.ajax({
-                        url: '/ajaxa',
+                        url: '/ajax',
                         type: 'post',
-                        data: {email:email},
+                        data: {action: 'email', email: email},
                         success: function (isEmailExisted) {
                             if (isEmailExisted == 'true') {
+                                emailExist = true;
                                 hint.html('Email 已经存在，请<a href="">登录</a>');
                                 hint.show();
                             } else {
+                                emailExist = false;
                                 hint.hide();
                             }
                         },
@@ -47,11 +50,41 @@
                     });
                 }
             });
+
+            $(':submit').click(function () {
+                if (emailExist) {
+                    alert('邮箱地址已经存在！')
+                    $('#email').focus();
+                    return;
+                }
+                var email = $('#email').val();
+                var password = $('#password').val();
+                $.ajax({
+                    url: '/ajax',
+                    type: 'post',
+                    data: {action: 'register', email: email, password: password},
+                    success: function (user) {
+                        var emailString = user.split(' ')[0];
+                        var passwordString = user.replace(email + ' ', '');
+                        $('table').append('<tr><td>' + emailString + '</td><td>' + passwordString + '</td></tr>').slideDown();
+                    }
+                });
+            });
         });
     </script>
 </head>
 <body>
 <input id="email" type="text" placeholder="Email">
 <small style="color: #f00; display: none"></small>
+<br>
+<input id="password" type="password" placeholder="Password"><br>
+<input type="submit" value="SIGN UP">
+<hr>
+<table border="1">
+    <tr>
+        <th>EMAIL</th>
+        <th>PASSWORD</th>
+    </tr>
+</table>
 </body>
 </html>
