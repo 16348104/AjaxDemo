@@ -15,13 +15,35 @@
         $(function () {
             $('#email').blur(function() {
                 var email = $(this).val();
+                var hint = $('small');
                 if (!emailRegExp.test(email)) {
-                    $('small').show();
+                    hint.text('请输入正确的邮箱地址');
+                    hint.show();
                 } else {
-                    $('small').hide();
+                    hint.hide();
                     $.ajax({
-                        url: '/ajax',
-                        type: 'POST'
+                        url: '/ajaxa',
+                        type: 'post',
+                        data: {email:email},
+                        success: function (isEmailExisted) {
+                            if (isEmailExisted == 'true') {
+                                hint.html('Email 已经存在，请<a href="">登录</a>');
+                                hint.show();
+                            } else {
+                                hint.hide();
+                            }
+                        },
+                        beforeSend: function () {
+                            console.log('before send...');
+                        },
+                        complete: function () {
+                            console.log('complete...')
+                        },
+                        error: function (a, b, c) {
+                            console.error('a: ' + a);
+                            console.error('b: ' + b);
+                            console.error('c: ' + c);
+                        }
                     });
                 }
             });
@@ -30,6 +52,6 @@
 </head>
 <body>
 <input id="email" type="text" placeholder="Email">
-<small style="color: #f00; display: none">请输入正确的邮箱地址</small>
+<small style="color: #f00; display: none"></small>
 </body>
 </html>
